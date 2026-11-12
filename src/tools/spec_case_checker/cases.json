@@ -1,0 +1,27 @@
+[
+  {
+    "module": "wall",
+    "case_name": "",
+    "expect_type_id": 1
+  },
+  {
+    "module": "wall",
+    "case_name": "",
+    "expect_type_id": 2
+  },
+  {
+    "module": "wall",
+    "case_name": "",
+    "expect_type_id": 3
+  },
+  {
+    "module": "wall",
+    "case_name": "",
+    "expect_type_id": 4
+  },
+  {
+    "module": "wall",
+    "case_name": "",
+    "expect_type_id": 99
+  }
+]

@@ -1,0 +1,11 @@
+# requirements.txt
+# ========== 核心必选 ==========
+fastapi
+uvicorn[standard]
+pydantic>=2.0
+pydantic-settings
+python-multipart
+ollama
+# ========== 可选扩展（llm/图像） ==========
+Pillow
+# passlib[bcrypt]
