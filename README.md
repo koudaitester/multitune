@@ -1,4 +1,4 @@
-# PlantTune
+# Multitune
 
 > 基于「业务域 + 域内分层」架构的视觉评估脚手架（v0.5 演进版）
 > 当前已落地：**tune_domain（活体调校域）** → PlantTune 盆栽 / PetTune 宠物
