@@ -7,7 +7,7 @@ from domains.good_domain.cloth.rules import CLOTH_PROMPT
 from domains.good_domain.wall.schema import GoodWallClassifyReq, GoodWallClassifyResp
 from domains.good_domain.wall.service import goodwall_classify
 
-router = APIRouter()
+router = APIRouter(prefix="/good", tags=["介质品质域"])
 
 @router.post("/cloth", response_model=ClothClassifyResp)
 async def cloth_evaluate(req: ClothClassifyReq):

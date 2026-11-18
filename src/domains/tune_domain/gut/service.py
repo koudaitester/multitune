@@ -10,24 +10,31 @@ def analyze_gut(raw_vision_result: str):
     raw_vision_result: Moondream输出的图片描述文本
     """
     lower_text = raw_vision_result.lower()
-    type_id = 99
 
-    if "not stool" in lower_text or "不是粪便" in lower_text:
+    def has(*words: str) -> bool:
+        return any(w in lower_text for w in words)
+
+    # 判定顺序必须「越具体越先」：
+    # 4 型（smooth sausage）里也含 sausage，不能让 sausage 单独命中 3 型，
+    # 否则基准理想样本永远判不出来。
+    if has("not stool", "no stool", "不是粪便"):
         type_id = 99
-    elif "hard separate lumps" in lower_text or "硬小球" in lower_text:
+    elif has("hard separate lumps", "separate hard lumps", "硬小球"):
         type_id = 1
-    elif ("lumpy sausage" or "lumpy") in lower_text:
+    elif has("lumpy"):
         type_id = 2
-    elif ("cracked" or "crack") in lower_text or "sausage" in lower_text:
+    elif has("cracked", "crack", "裂纹"):
         type_id = 3
-    elif ("smooth sausage" or "smooth") in lower_text or "光滑香肠" in lower_text:
+    elif has("smooth", "光滑"):
         type_id = 4
-    elif "soft blobs" in lower_text:
+    elif has("soft blobs", "soft"):
         type_id = 5
-    elif "mushy" in lower_text:
+    elif has("mushy", "糊状"):
         type_id = 6
-    elif "watery" in lower_text or "水样" in lower_text:
+    elif has("watery", "水样"):
         type_id = 7
+    else:
+        type_id = 99
 
     rule = BRISTOL_RULES[type_id]
 

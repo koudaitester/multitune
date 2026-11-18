@@ -1,3 +1,4 @@
+import asyncio
 import requests
 from core.logger import logger
 from core.config import cfg
@@ -12,10 +13,13 @@ async def vision_predict(img_b64: str, prompt: str) -> str:
     }
     logger.info(f"VL payload: {payload}")
     try:
-        resp = requests.post(
+        # requests 是同步阻塞调用，直接在 async 里跑会卡死整个事件循环，
+        # 并发请求会互相排队（最长等 vision_timeout）。挪到线程池执行。
+        resp = await asyncio.to_thread(
+            requests.post,
             f"{cfg.ollama_base_url}/api/generate",
             json=payload,
-            timeout=cfg.vision_timeout
+            timeout=cfg.vision_timeout,
         )
         resp.raise_for_status()
         logger.info(f"VL response status: {resp.status_code}")

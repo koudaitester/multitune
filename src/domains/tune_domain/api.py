@@ -39,9 +39,8 @@ async def pet_tune(req: PetTuneIn):
 async def fruit_evaluate(req: FruitClassifyReq):
     # 调用common vision_client拿到moondream raw文本
     raw_text = await vision_predict(req.image_b64, FRUIT_PROMPT)
-    raw_text = raw_text.replace("", "unripe")
     if not raw_text:
-            raise HTTPException(status_code=500, detail="调用视觉模型失败")
+        raise HTTPException(status_code=500, detail="调用视觉模型失败")
     return await fruit_classify(raw_text)
 
 @router.post("/gut", response_model=GutAnalyzeResponse)
