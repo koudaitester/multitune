@@ -1,5 +1,4 @@
 from typing import Dict, List
-from .schema import OldManVisualEvalResponse
 
 
 OLDMAN_SPACE_PROMPT = """

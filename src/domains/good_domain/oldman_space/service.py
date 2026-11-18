@@ -33,11 +33,13 @@ def extract_entities(raw_text: str) -> Dict:
             entities["has_obstruction"] = True
             entities["obstruction_list"].append(obs)
 
-    # 光照
-    if "backlight" in text_lower:
-        entities["light_condition"] = "backlight"
-    elif "glare" in text_lower:
-        entities["light_condition"] = "glare"
+    # 光照：词表统一放在 rules，避免关键词硬编码在 service 里
+    for kw in KEYWORDS["light"]:
+        if kw == "normal":
+            continue
+        if kw in text_lower:
+            entities["light_condition"] = kw
+            break
 
     # 墙面可用性：模型明确说没有可用安装墙面时置为 False
     # （原实现只有初始化的 True，没有任何赋值点，这个维度等于不存在）
