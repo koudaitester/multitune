@@ -1,6 +1,7 @@
 from .schema import OldManVisualEvalRequest
 from typing import Dict
 from .rules import KEYWORDS
+from common.schema_meta import STATUS_OK, STATUS_INVALID
 
 def extract_entities(raw_text: str) -> Dict:
     """
@@ -119,6 +120,8 @@ def build_eval_result(entities: Dict) -> Dict:
     ])
 
     layout_score = max(0, layout_score)
+    status = STATUS_OK
+    reason = ""
 
     # 兜底：识别不到房间类型与高危区时的提示
     if not entities["space_type"]:
@@ -129,6 +132,9 @@ def build_eval_result(entities: Dict) -> Dict:
         mmwave_sensor.clear()
         camera_sensor.clear()
         layout_score = max(0, layout_score - 30)
+        # 这里的分数只是兜底扣分，不构成有效结论，必须显式标成 invalid
+        status = STATUS_INVALID
+        reason = "图像无法识别房间类型与活动区域"
     if len(risk_area_list) == 0:
         risk_area_list.append({"area_name": "未识别高危活动区域", "risk_level": "低", "note": "图片中未识别到跌倒高风险区域，需确认拍摄范围是否覆盖老人活动位置"})
 
@@ -140,7 +146,9 @@ def build_eval_result(entities: Dict) -> Dict:
         "panic_button": panic_button,
         "blind_zone": blind_zone,
         "layout_score": layout_score,
-        "improve_suggest": improve_suggest
+        "improve_suggest": improve_suggest,
+        "status": status,
+        "reason": reason,
     }
 
 def validate_entities(entities: Dict) -> bool:

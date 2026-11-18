@@ -47,8 +47,8 @@ async def guttune_analyze(req: GutAnalyzeRequest):
     print("==== Moondream RAW OUTPUT ====")
     print(raw_text)
     print("==============================")
-    # ============插桩调试用，测试的时候直接写死返回文本，正式启用再替换上面========
-    # raw_text = "the image shows smooth sausage shaped stool"
-    # ==========================================================================
+    # 模型没返回内容时直接报错，不能落进 99 分支被当成「拍的不是粪便」
+    if not raw_text:
+        raise HTTPException(status_code=500, detail="调用视觉模型失败")
     result = analyze_gut(raw_text)
     return result

@@ -2,6 +2,7 @@
 from .rules import BRISTOL_RULES, BASELINE_SAMPLE, STATE_LEVEL
 from tools.add_gut_log.add_gut_log import add_log_entry
 from datetime import datetime as Datetime
+from common.schema_meta import STATUS_OK, STATUS_INVALID, REASON_NO_TARGET
 
 
 def analyze_gut(raw_vision_result: str):
@@ -38,6 +39,21 @@ def analyze_gut(raw_vision_result: str):
 
     rule = BRISTOL_RULES[type_id]
 
+    # 识别失败：直接返回，不写日志
+    # （原实现会把无效结果也记进用户日志，日志里会多出一条假记录）
+    if type_id == 99:
+        return {
+            "type_id": 99,
+            "type_name": rule["name"],
+            "description": rule["desc"],
+            "suggestion": rule["suggest"],
+            "compare_baseline": "无法和基准对比，图片不是粪便",
+            "level": STATE_LEVEL[99]["level"],
+            "tag": STATE_LEVEL[99]["tag"],
+            "status": STATUS_INVALID,
+            "reason": REASON_NO_TARGET + "（粪便）",
+        }
+
     # 和基准样本对比
     if type_id == BASELINE_SAMPLE["type_id"]:
         compare = "🎉 和你的基准理想样本一致，肠道状态稳定"
@@ -69,7 +85,9 @@ def analyze_gut(raw_vision_result: str):
         "suggestion": rule["suggest"],
         "compare_baseline": compare,
         "level": level_info["level"],
-        "tag": level_info["tag"]
+        "tag": level_info["tag"],
+        "status": STATUS_OK,
+        "reason": "",
     }
 
 

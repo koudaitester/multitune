@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+from common.schema_meta import EvalMeta
+
 
 # 入参
 class OldManVisualEvalRequest(BaseModel):
@@ -38,8 +40,8 @@ class PanicButtonItem(BaseModel):
     note: str
 
 
-class OldManVisualEvalResponse(BaseModel):
-    space_type: str
+class OldManVisualEvalResponse(EvalMeta):
+    space_type: str = Field(description="识别到的房间类型，unknown 表示未识别出来")
     risk_area_list: List[RiskAreaItem]
     mmwave_sensor: List[MmwaveSensorItem]
     camera_sensor: List[CameraSensorItem]
