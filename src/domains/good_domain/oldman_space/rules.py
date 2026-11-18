@@ -16,6 +16,9 @@ KEYWORDS = {
     "high_risk_zone": ["bed edge", "toilet", "shower", "sofa standing", "walkway"],
     "obstruction": ["cabinet", "metal", "curtain", "pillar"],
     "light": ["backlight", "glare", "normal"],
+    # 模型明确表示没有可安装墙面时才视为不可用
+    "wall_unavailable": ["no available wall", "no free wall", "no wall",
+                         "without wall", "wall is blocked", "no mounting"],
 }
 
 # 硬件固定参数常量

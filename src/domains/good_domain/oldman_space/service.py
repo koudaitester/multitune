@@ -39,6 +39,11 @@ def extract_entities(raw_text: str) -> Dict:
     elif "glare" in text_lower:
         entities["light_condition"] = "glare"
 
+    # 墙面可用性：模型明确说没有可用安装墙面时置为 False
+    # （原实现只有初始化的 True，没有任何赋值点，这个维度等于不存在）
+    if any(kw in text_lower for kw in KEYWORDS["wall_unavailable"]):
+        entities["mount_wall_available"] = False
+
     return entities
 
 def build_eval_result(entities: Dict) -> Dict:
@@ -72,9 +77,10 @@ def build_eval_result(entities: Dict) -> Dict:
             "block_risk": "无"
         })
     else:
-        blind_zone.append("存在遮挡，毫米波覆盖受限")
-        improve_suggest.append("更换毫米波安装位置，避开柜体/金属遮挡")
-        layout_score -=25
+        reason = "存在遮挡" if entities["has_obstruction"] else "无可用安装墙面"
+        blind_zone.append(f"{reason}，毫米波覆盖受限")
+        improve_suggest.append("更换毫米波安装位置：避开柜体/金属遮挡，或改选其他房间的墙面")
+        layout_score -= 25
 
     # 摄像头规则
     if entities["light_condition"] == "backlight":
@@ -117,6 +123,9 @@ def build_eval_result(entities: Dict) -> Dict:
         entities["space_type"] = "unknown"
         blind_zone.append("图像无法识别房间类型与活动区域，建议重新拍摄清晰室内照片")
         improve_suggest.append("重新拍摄，保证画面包含主要活动区域（床/马桶/过道）")
+        # 什么都没识别出来时，不要给具体硬件点位，避免误导安装
+        mmwave_sensor.clear()
+        camera_sensor.clear()
         layout_score = max(0, layout_score - 30)
     if len(risk_area_list) == 0:
         risk_area_list.append({"area_name": "未识别高危活动区域", "risk_level": "低", "note": "图片中未识别到跌倒高风险区域，需确认拍摄范围是否覆盖老人活动位置"})

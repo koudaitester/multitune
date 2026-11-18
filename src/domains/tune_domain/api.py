@@ -12,9 +12,6 @@ from domains.tune_domain.fruit.schema import FruitClassifyReq, FruitClassifyResp
 from domains.tune_domain.fruit.service import fruit_classify
 from domains.tune_domain.gut.schema import GutAnalyzeRequest, GutAnalyzeResponse
 from domains.tune_domain.gut.service import analyze_gut
-from domains.tune_domain.oldman_space.service import MoldOldManEvalService
-from domains.tune_domain.oldman_space.schema import OldManVisualEvalRequest, OldManVisualEvalResponse
-from domains.tune_domain.oldman_space.rules import OLDMAN_SPACE_PROMPT
 
 
 router = APIRouter(prefix="/tune", tags=["活体调校域"])
@@ -54,11 +51,4 @@ async def guttune_analyze(req: GutAnalyzeRequest):
     # raw_text = "the image shows smooth sausage shaped stool"
     # ==========================================================================
     result = analyze_gut(raw_text)
-    return result
-
-@router.post("/oldman", response_model=OldManVisualEvalResponse)
-async def oldman_visual_eval(req: OldManVisualEvalRequest):
-    raw_text = await vision_predict(req.image_b64, OLDMAN_SPACE_PROMPT)
-    raw_text = ""
-    result = await MoldOldManEvalService.evaluate(raw_text)
     return result

@@ -22,5 +22,22 @@
     "moondream_raw": "watery",
     "prompt_version": "golden_3stage_v1",
     "notes": ""
+  },
+  {
+    "record_time": "2026-11-13",
+    "bristol_type": 3,
+    "feature": "前段偏干，擦拭存在残留",
+    "baseline_compare": "相比基准4型理想样本小幅下滑",
+    "diet": "主食根茎薯类；此前长期以饼为主食，排便稳定维持4型",
+    "infer": "大量根茎薯类纤维，饮水不足时易出现前段干结、残留",
+    "suggest": "增加饮水；主食轮换，饼为主，少量搭配薯类"
+  },
+  {
+    "date": "2026-11-16",
+    "bristol_type": 4,
+    "diet_note": "饮用红茶",
+    "stool_desc": "光滑香肠状，擦拭基本无残留，排便整体舒适",
+    "discomfort": "排便起始需要稍用力，肛门轻微撕扯感",
+    "remark": "粪便本体达标，仅前端排出阻力偏大，持续不适则调整补水与排便发力方式"
   }
 ]
