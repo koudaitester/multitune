@@ -39,5 +39,21 @@
     "stool_desc": "光滑香肠状，擦拭基本无残留，排便整体舒适",
     "discomfort": "排便起始需要稍用力，肛门轻微撕扯感",
     "remark": "粪便本体达标，仅前端排出阻力偏大，持续不适则调整补水与排便发力方式"
+  },
+  {
+    "timestamp": "2026-11-19T07:53:09.877005",
+    "image_filename": "2026-11-19 07:53:09.jpg",
+    "human_label": "水样，无固体完全液体，腹泻",
+    "moondream_raw": "watery",
+    "prompt_version": "golden_3stage_v1",
+    "notes": ""
+  },
+  {
+    "timestamp": "2026-11-19T07:53:20.960241",
+    "image_filename": "2026-11-19 07:53:20.jpg",
+    "human_label": "2型：结块香肠状香肠状，表面有凹凸结块",
+    "moondream_raw": "the stool in the image is lumpy and cracked.",
+    "prompt_version": "golden_3stage_v1",
+    "notes": ""
   }
 ]
