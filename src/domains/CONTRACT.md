@@ -12,6 +12,7 @@
 | pet | `POST /api/v1/tune/pet` | `img_b64` | 是 |
 | fruit | `POST /api/v1/tune/fruit` | `image_b64` | 是 |
 | gut | `POST /api/v1/tune/gut` | `image_b64` | 是 |
+| posture | `POST /api/v1/tune/posture` | `image_b64` | **否（关键点几何）** |
 | cloth | `POST /api/v1/good/cloth` | `image_b64` | **否（硬编码直通）** |
 | wall | `POST /api/v1/good/goodwall` | `image_b64` | **否（硬编码直通）** |
 | oldman_space | `POST /api/v1/good/oldman` | `image_b64` | **否（硬编码直通）** |
@@ -20,6 +21,14 @@
 > 入参字段不一致（`img_b64` / `image_b64`）是历史遗留，**新服务一律用 `image_b64`**，老的不动。
 
 > 「硬编码直通」= `api.py` 里直接把 `raw_text` 写死成一句描述，不真调模型。改这三个域时别以为模型没返回。
+
+> `posture` 是唯一不调视觉模型的服务：轻量 VL 给不出几何量（实测同一张侧面照
+> 会同时说 "side profile position" 和 "photo is taken from the front"，二选一提问
+> 还输出 "no head"），所以改用 mediapipe 关键点算**图像平面内的角度**。
+> 三条硬约束——**正侧位、单人、全身入镜**——任一不满足就判 `invalid` 且不给角度，
+> 这是刻意设计：宁可判无效，也不给错数。全身没拍全时退化为 `reliability=upper_only`，
+> 只算上半身。阈值全部实测校准（头前倾 15° / 肩 8° / 骨盆 12° / 膝 8°），
+> 改阈值必须用真实照片重新校准，别凭感觉调。
 
 ## 2. 域间调用规则
 

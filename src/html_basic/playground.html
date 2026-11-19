@@ -112,7 +112,7 @@
 <div class="top">
   <div>
     <h1>Multitune 视觉服务控制台</h1>
-    <p class="sub">8 个视觉评估插件 · 上传图片直接调用本地接口</p>
+    <p class="sub">9 个视觉评估插件 · 上传图片直接调用本地接口</p>
   </div>
   <div class="conn"><span id="dot" class="dot"></span><span id="connText">检测中…</span></div>
 </div>
@@ -162,6 +162,8 @@ const SERVICES = [
     hint:'成熟度分级与食用时机建议' },
   { key:'gut', name:'便便分型', domain:'live', path:'/api/v1/tune/gut', inKey:'image_b64', tag:false,
     hint:'布里斯托分型判定与基准对比' },
+  { key:'posture', name:'体态矫正', domain:'live', path:'/api/v1/tune/posture', inKey:'image_b64', tag:false,
+    hint:'正侧位照片的关键点角度：头前倾 / 圆肩 / 骨盆前倾 / 膝超伸' },
   { key:'cloth', name:'织物品质', domain:'inert', path:'/api/v1/good/cloth', inKey:'image_b64', tag:true, stub:true,
     hint:'洁净度、完整度、污渍判断' },
   { key:'goodwall', name:'墙面品质', domain:'inert', path:'/api/v1/good/goodwall', inKey:'image_b64', tag:true, stub:true,
@@ -326,6 +328,7 @@ function render(key, d){
     case 'gut': return head + renderGut(d);
     case 'oldman': return head + renderOldman(d);
     case 'env': return head + renderEnv(d);
+    case 'posture': return head + renderPosture(d);
     default: return head + renderGeneric(d);
   }
 }
@@ -373,6 +376,47 @@ function renderEnv(d){
     h += '<div class="block"><h4>异常指标 · 0</h4><p class="muted">未检出异常</p></div>';
   }
   h += list('建议', d.suggestions, x => x) + list('传感器布点', d.monitor_points, x => x);
+  return h;
+}
+
+function renderPosture(d){
+  const lvlBg = { '优':'#eefaf1', '良':'#fdf8e7', '一般':'#fdeee4', '差':'#fdeded', '无效':'#f2f4f7' }[d.posture_level] || '#f2f4f7';
+  const lvlColor = { '优':'var(--ok)', '良':'var(--warn)', '一般':'var(--mid)', '差':'var(--bad)', '无效':'var(--dim)' }[d.posture_level] || 'var(--dim)';
+
+  let h = '<div class="score"><b style="color:' + scoreColor(d.posture_score) + '">' + esc(d.posture_score) + '</b>' +
+    '<span class="lvl" style="color:' + lvlColor + ';background:' + lvlBg + '">' + esc(d.posture_level) + '</span>' +
+    '<span>体态分 / 100</span></div>';
+
+  const m = d.metrics || {};
+  const rows = [
+    ['头前倾', m.head_forward_deg],
+    ['圆肩 / 含胸', m.shoulder_offset_deg],
+    ['骨盆倾角', m.pelvic_tilt_deg],
+    ['膝 / 下肢力线', m.knee_deg],
+  ].filter(r => r[1] !== null && r[1] !== undefined);
+
+  if (rows.length) {
+    h += '<div class="block"><h4>实测角度</h4><table class="issues"><tr><th>指标</th><th>角度</th></tr>';
+    rows.forEach(r => { h += '<tr><td>' + esc(r[0]) + '</td><td><b>' + esc(r[1]) + '°</b></td></tr>'; });
+    h += '</table></div>';
+  }
+
+  if (d.issues && d.issues.length) {
+    h += '<div class="block"><h4>检出问题 · ' + d.issues.length + '</h4><table class="issues">' +
+      '<tr><th>问题</th><th>程度</th><th>实测 / 阈值</th><th>说明</th></tr>';
+    d.issues.forEach(i => {
+      h += '<tr><td>' + esc(i.item) + '</td><td>' + esc(i.severity) + '</td><td class="muted">' +
+        esc(i.measured_deg) + '° / ' + esc(i.threshold_deg) + '°</td><td class="muted">' + esc(i.note) + '</td></tr>';
+    });
+    h += '</table></div>';
+  } else {
+    h += '<div class="block"><h4>检出问题 · 0</h4><p class="muted">未检出明显代偿</p></div>';
+  }
+
+  h += '<div class="kv"><span>评估范围</span><b>' +
+    ({ full:'全身', upper_only:'仅上半身', none:'无效' }[d.reliability] || esc(d.reliability)) + '</b></div>' +
+    list('建议', d.suggestions, x => x) + list('拍摄要求', d.camera_advice, x => x);
+  if (d.notice) h += '<div class="block warn"><h4>注意</h4><p>' + esc(d.notice) + '</p></div>';
   return h;
 }
 
