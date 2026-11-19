@@ -10,6 +10,8 @@ venv/
 # runtime dir
 log/
 tmp/
+# 运行时数据：每次调用 gut 接口都会改写，留在库里会持续产生脏改动
+src/tools/add_gut_log/gut_tune_log.json
 # ide
 .idea/
 .vscode/
