@@ -15,6 +15,9 @@ from domains.good_domain.env_monitor.rules import ENV_MONITOR_PROMPT
 from domains.good_domain.mold.schema import MoldReq, MoldResp
 from domains.good_domain.mold.service import evaluate_mold
 from domains.good_domain.mold.rules import MOLD_PROMPT
+from .env_note.schema import EnvNoteCreate, EnvNoteItem
+from .env_note.service import add_note, list_note
+from typing import Optional
 
 router = APIRouter(prefix="/good", tags=["介质品质域"])
 
@@ -52,3 +55,11 @@ async def mold_evaluate(req: MoldReq):
     if not raw_text:
         raise HTTPException(status_code=500, detail="调用视觉模型失败")
     return evaluate_mold(raw_text, req.humidity, req.temperature)
+
+@router.post("/env-note/add", response_model=EnvNoteItem)
+def env_note_add(payload: EnvNoteCreate):
+    return add_note(payload)
+
+@router.get("/env-note/list")
+def env_note_list(start:Optional[str]=None, end:Optional[str]=None):
+    return list_note(start, end)

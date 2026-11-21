@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2026-11-22T06:45:10.282534",
+    "temp": 19.0,
+    "humidity": 42.0,
+    "co2": 700,
+    "mold_risk": 5,
+    "resp_feel": 5,
+    "sleep_feel": 5,
+    "notes": ""
+  },
+  {
+    "timestamp": "2026-11-22T06:47:55.851217",
+    "temp": 18.0,
+    "humidity": 50.0,
+    "co2": 800,
+    "mold_risk": 4,
+    "resp_feel": 3,
+    "sleep_feel": 3,
+    "notes": "阴天"
+  },
+  {
+    "timestamp": "2026-11-22T06:49:17.430449",
+    "temp": 20.0,
+    "humidity": 60.0,
+    "co2": 1000,
+    "mold_risk": 3,
+    "resp_feel": 3,
+    "sleep_feel": 3,
+    "notes": ""
+  }
+]

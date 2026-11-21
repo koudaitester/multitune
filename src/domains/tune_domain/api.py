@@ -15,7 +15,6 @@ from domains.tune_domain.fruit.service import fruit_classify
 from domains.tune_domain.gut.schema import GutAnalyzeRequest, GutAnalyzeResponse
 from domains.tune_domain.gut.service import analyze_gut
 from domains.tune_domain.posture.schema import PostureReq, PostureResp
-from domains.tune_domain.posture.service import evaluate_posture
 
 
 router = APIRouter(prefix="/tune", tags=["活体调校域"])
@@ -62,4 +61,6 @@ async def posture_eval(req: PostureReq):
     # 体态矫正走几何判定（mediapipe 关键点角度），不调视觉模型：
     # 轻量 VL 给不出几何量，实测同一张侧面照会自相矛盾
     # 推理是同步 CPU 计算，放线程池，避免阻塞事件循环
+    from domains.tune_domain.posture.service import evaluate_posture
+
     return await asyncio.to_thread(evaluate_posture, req.image_b64)
