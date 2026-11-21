@@ -17,6 +17,12 @@
 | wall | `POST /api/v1/good/goodwall` | `image_b64` | **否（硬编码直通）** |
 | oldman_space | `POST /api/v1/good/oldman` | `image_b64` | **否（硬编码直通）** |
 | env_monitor | `POST /api/v1/good/env` | `image_b64` | 是 |
+| mold | `POST /api/v1/good/mold` | `image_b64`（可选 `humidity` / `temperature`） | 是 |
+
+> `mold` 是首个带**可选数值入参**的服务：`humidity` 与 `temperature` 不传就完全不加权、不猜默认值。
+> 规则表（特征权重 81/41/21 分级、湿度 30/20/10、温度 5、无病灶时诱因封顶 20）来自
+> `human_env_api/knowledge/mold_risk_calc.md`，是那个项目里唯一值得搬的知识；原实现的
+> 贝叶斯网络与正则软规则属于研究阶段实验，未移植。
 
 > 入参字段不一致（`img_b64` / `image_b64`）是历史遗留，**新服务一律用 `image_b64`**，老的不动。
 

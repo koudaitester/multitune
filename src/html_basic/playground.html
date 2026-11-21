@@ -112,7 +112,7 @@
 <div class="top">
   <div>
     <h1>Multitune 视觉服务控制台</h1>
-    <p class="sub">9 个视觉评估插件 · 上传图片直接调用本地接口</p>
+    <p class="sub">10 个视觉评估插件 · 上传图片直接调用本地接口</p>
   </div>
   <div class="conn"><span id="dot" class="dot"></span><span id="connText">检测中…</span></div>
 </div>
@@ -172,6 +172,8 @@ const SERVICES = [
     hint:'风险区域 + 毫米波/摄像头/按钮布点方案' },
   { key:'env', name:'环境监测', domain:'inert', path:'/api/v1/good/env', inKey:'image_b64', tag:false,
     hint:'室内舒适度评分、异常指标与传感器布点' },
+  { key:'mold', name:'霉菌风险', domain:'inert', path:'/api/v1/good/mold', inKey:'image_b64', tag:false,
+    hint:'墙面/顶面/地面的霉斑、水痕、冷凝与湿度风险加权' },
 ];
 
 const el = id => document.getElementById(id);
@@ -329,6 +331,7 @@ function render(key, d){
     case 'oldman': return head + renderOldman(d);
     case 'env': return head + renderEnv(d);
     case 'posture': return head + renderPosture(d);
+    case 'mold': return head + renderMold(d);
     default: return head + renderGeneric(d);
   }
 }
@@ -416,6 +419,41 @@ function renderPosture(d){
   h += '<div class="kv"><span>评估范围</span><b>' +
     ({ full:'全身', upper_only:'仅上半身', none:'无效' }[d.reliability] || esc(d.reliability)) + '</b></div>' +
     list('建议', d.suggestions, x => x) + list('拍摄要求', d.camera_advice, x => x);
+  if (d.notice) h += '<div class="block warn"><h4>注意</h4><p>' + esc(d.notice) + '</p></div>';
+  return h;
+}
+
+/* 霉菌风险：分数越高越危险，配色与其它服务相反 */
+function riskColor(s){
+  if (s >= 81) return 'var(--bad)';
+  if (s >= 41) return 'var(--mid)';
+  if (s >= 21) return 'var(--warn)';
+  return 'var(--ok)';
+}
+
+function renderMold(d){
+  const lvlBg = { '高风险':'#fdeded', '中风险':'#fdeee4', '初级风险':'#fdf8e7', '低风险':'#eefaf1', '无效':'#f2f4f7' }[d.risk_level] || '#f2f4f7';
+  const lvlColor = { '高风险':'var(--bad)', '中风险':'var(--mid)', '初级风险':'var(--warn)', '低风险':'var(--ok)', '无效':'var(--dim)' }[d.risk_level] || 'var(--dim)';
+
+  let h = '<div class="score"><b style="color:' + riskColor(d.risk_score) + '">' + esc(d.risk_score) + '</b>' +
+    '<span class="lvl" style="color:' + lvlColor + ';background:' + lvlBg + '">' + esc(d.risk_level) + '</span>' +
+    '<span>风险分 / 100</span></div>';
+
+  if (d.features && d.features.length) {
+    h += '<div class="block"><h4>命中特征 · ' + d.features.length + '</h4><table class="issues">' +
+      '<tr><th>特征</th><th>类型</th><th>分值</th><th>说明</th></tr>';
+    d.features.forEach(f => {
+      const kind = { lesion:'病灶', inducer:'诱因', benefit:'有利' }[f.kind] || f.kind;
+      h += '<tr><td>' + esc(f.name) + '</td><td>' + esc(kind) + '</td><td>' +
+        (f.weight > 0 ? '+' : '') + esc(f.weight) + '</td><td class="muted">' + esc(f.note) + '</td></tr>';
+    });
+    h += '</table></div>';
+  } else {
+    h += '<div class="block"><h4>命中特征 · 0</h4><p class="muted">未检出病灶或诱因特征</p></div>';
+  }
+
+  h += list('处置建议', d.suggestions, x => x);
+  if (d.confidence_tip) h += '<div class="kv"><span>置信口径</span><b>' + esc(d.confidence_tip) + '</b></div>';
   if (d.notice) h += '<div class="block warn"><h4>注意</h4><p>' + esc(d.notice) + '</p></div>';
   return h;
 }

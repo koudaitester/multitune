@@ -12,6 +12,9 @@ from domains.good_domain.oldman_space.rules import OLDMAN_SPACE_PROMPT
 from domains.good_domain.env_monitor.schema import EnvMonitorReq, EnvMonitorResp
 from domains.good_domain.env_monitor.service import evaluate_env
 from domains.good_domain.env_monitor.rules import ENV_MONITOR_PROMPT
+from domains.good_domain.mold.schema import MoldReq, MoldResp
+from domains.good_domain.mold.service import evaluate_mold
+from domains.good_domain.mold.rules import MOLD_PROMPT
 
 router = APIRouter(prefix="/good", tags=["介质品质域"])
 
@@ -40,3 +43,12 @@ async def env_monitor(req: EnvMonitorReq):
     if not raw_text:
         raise HTTPException(status_code=500, detail="调用视觉模型失败")
     return evaluate_env(raw_text)
+
+
+@router.post("/mold", response_model=MoldResp)
+async def mold_evaluate(req: MoldReq):
+    # 霉菌风险：视觉描述提取特征，温湿度（若传）参与加权；没传就不猜
+    raw_text = await vision_predict(req.image_b64, MOLD_PROMPT)
+    if not raw_text:
+        raise HTTPException(status_code=500, detail="调用视觉模型失败")
+    return evaluate_mold(raw_text, req.humidity, req.temperature)
