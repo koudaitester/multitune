@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Exoplanetary Site Bayesian Assessment Schema",
+  "description": "跨天体场地贝叶斯评估，月球/火星外星基地选址，区分通用核心特征+天体可插拔模块；支持两种任务模式：长期主基地(启用共存评估) / 2~4人拖车折叠舱短期科考哨卡(关闭共存评估)",
+  "type": "object",
+  "required": [
+    "site_meta",
+    "bayes_config",
+    "feature_groups",
+    "result"
+  ],
+  "properties": {
+    "site_meta": {
+      "type": "object",
+      "description": "场地基础元信息",
+      "required": ["site_id", "celestial_body", "location", "mission_profile"],
+      "properties": {
+        "site_id": {"type": "string", "description": "候选坑/点位唯一ID"},
+        "celestial_body": {"type": "string", "enum": ["moon", "mars", "asteroid_other"], "description": "目标天体"},
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": {"type": "number"},
+            "lon": {"type": "number"},
+            "source": {"type": "string", "enum": ["ground_telescope", "orbital_imagery"]}
+          }
+        },
+        "mission_profile": {
+          "type": "object",
+          "properties": {
+            "crew_count": {"type": "integer", "minimum": 2, "maximum": 4},
+            "max_stay_days": {"type": "integer", "minimum": 1, "maximum": 60},
+            "mission_type": {"type": "string", "enum": ["mobile_trailer_depot","permanent_main_base"]}
+          }
+        }
+      }
+    },
+    "bayes_config": {
+      "type": "object",
+      "description": "贝叶斯引擎全局参数",
+      "required": ["prior_p_qualified", "uncertainty_weight", "veto_threshold", "enable_coexistence_check"],
+      "properties": {
+        "prior_p_qualified": {"type": "number", "minimum": 0, "maximum": 1, "description": "先验P(合格)"},
+        "uncertainty_weight": {"type": "number", "minimum": 0, "maximum": 1, "description": "图像/DEM信息缺失带来的不确定性惩罚系数"},
+        "veto_threshold": {"type": "number", "minimum": 0, "maximum": 1, "description": "一票否决特征阈值，低于此值直接标记不可用"},
+        "enable_coexistence_check": {"type": "boolean", "description": "true=长期主基地，开启同坑多点共存校验；false=短期哨卡，跳过共存评估"}
+      }
+    },
+    "feature_groups": {
+      "type": "object",
+      "description": "特征组：通用特征 + 天体专属插件，每组输出似然P(观测|合格)",
+      "required": ["general", "celestial_plugin"],
+      "properties": {
+        "general": {
+          "type": "object",
+          "description": "跨天体通用特征（可直接复用到月球、火星）",
+          "required": ["terrain", "illumination", "comms_los", "radiation_shield", "geology_science"],
+          "properties": {
+            "terrain": {
+              "type": "object",
+              "properties": {
+                "slope_mean_deg": {"type": "number", "description": "停靠区平均坡度"},
+                "slope_max_deg": {"type": "number"},
+                "boulder_density_over_30cm": {"type": "number", "description": "大于30cm石块密度，单位：个/100㎡"},
+                "micro_roughness_score": {"type": "number", "minimum":0, "maximum":1},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1, "description": "P(观测地形特征|站点合格)"}
+              }
+            },
+            "illumination": {
+              "type": "object",
+              "properties": {
+                "continuous_sun_hours": {"type": "number"},
+                "terrain_shade_available": {"type": "boolean", "description": "有无地形天然遮阳/遮蔽"},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1}
+              }
+            },
+            "space_environment": {
+              "type": "object",
+              "description": "空间环境风险：银河宇宙射线、太阳粒子事件、微流星/溅射抛射物；地面望远镜仅能通过地形间接估算，无法直接测量",
+              "properties": {
+                "gcr_flux_estimate": {"type": "number", "minimum":0, "maximum":1, "description": "银河宇宙射线通量相对风险，1=最高"},
+                "spe_event_prob": {"type": "number", "minimum":0, "maximum":1, "description": "太阳高能粒子事件年度概率"},
+                "micrometeor_flux": {"type": "number", "minimum":0, "maximum":1, "description": "微流星体通量风险"},
+                "ejecta_flux_local": {"type": "number", "minimum":0, "maximum":1, "description": "本地撞击溅射碎石（月面漂浮抛射物）通量风险"},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1, "description": "P(观测空间环境特征|站点合格)"}
+              }
+            },
+            "comms_los": {
+              "type": "object",
+              "properties": {
+                "has_line_of_sight": {"type": "boolean", "description": "对地/中继视距通信，硬约束"},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1}
+              }
+            },
+            "radiation_shield": {
+              "type": "object",
+              "properties": {
+                "terrain_shield_reduction_factor": {"type": "number", "minimum":0, "maximum":1},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1}
+              }
+            },
+            "geology_science": {
+              "type": "object",
+              "properties": {
+                "outcrop_available": {"type": "boolean"},
+                "sampling_value_score": {"type": "number", "minimum":0, "maximum":1},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1}
+              }
+            },
+            "coexistence_assessment": {
+              "type": "object",
+              "description": "同坑多点共存评估，仅enable_coexistence_check=true时启用",
+              "properties": {
+                "nearest_existing_site_distance_km": {"type": "number", "description": "距离同坑最近已规划站点距离(km)"},
+                "inter_site_line_of_sight": {"type": "boolean", "description": "站点之间是否直接无线电可视"},
+                "route_max_slope_deg": {"type": "number", "description": "两站点之间通行路线最大坡度"},
+                "shared_ejecta_risk": {"type": "number", "minimum":0, "maximum":1, "description": "共享撞击溅射物风险，越高越危险"},
+                "p_likelihood": {"type": "number", "minimum":0, "maximum":1, "description": "P(共存特征观测|站点合格)"}
+              }
+            }
+          }
+        },
+        "celestial_plugin": {
+          "type": "object",
+          "description": "天体专属可插拔模块，按需启用，不改动通用评估骨架",
+          "properties": {
+            "moon": {
+              "type": "object",
+              "properties": {
+                "lunar_day_night_risk": {"type": "number", "minimum":0, "maximum":1, "description": "月夜抵达风险"},
+                "lunar_dust_risk": {"type": "number", "minimum":0, "maximum":1},
+                "has_ice_nearby": {"type": "boolean", "description": "临时站点不要求水冰，仅标记"}
+              }
+            },
+            "mars": {
+              "type": "object",
+              "properties": {
+                "dust_storm_prob": {"type": "number", "minimum":0, "maximum":1},
+                "atm_pressure": {"type": "number"},
+                "has_water_ice_near_surface": {"type": "boolean"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "description": "贝叶斯输出结果",
+      "required": ["p_site_qualified", "uncertainty_std", "veto_triggered", "risk_items"],
+      "properties": {
+        "p_site_qualified": {"type": "number", "minimum":0, "maximum":1, "description": "后验概率P(站点合格|观测特征)"},
+        "uncertainty_std": {"type": "number", "minimum":0, "maximum":1, "description": "概率估计的不确定性方差"},
+        "veto_triggered": {"type": "boolean", "description": "是否触发一票否决"},
+        "risk_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_name": {"type": "string"},
+              "risk_level": {"type": "string", "enum": ["low","medium","high","critical"]},
+              "description": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

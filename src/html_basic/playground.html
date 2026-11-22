@@ -62,9 +62,10 @@
   .drop img{max-width:100%;max-height:100%;object-fit:contain}
   .field{margin-top:14px}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-  input[type=text]{width:100%;padding:7px 10px;font:inherit;font-size:13px;
+  input[type=text],select{width:100%;padding:7px 10px;font:inherit;font-size:13px;
     border:1px solid var(--line);border-radius:7px;background:#fff;color:inherit}
-  input[type=text]:focus{outline:0;border-color:var(--live);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
+  input[type=text]:focus,select:focus{outline:0;border-color:var(--live);box-shadow:0 0 0 3px rgba(15,118,110,.1)}
+  .fieldnote{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
   .btns{display:flex;gap:8px;margin-top:16px}
   button{font:inherit;cursor:pointer;border-radius:8px;padding:8px 14px;border:1px solid transparent;
     transition:background .15s,border-color .15s,opacity .15s}
@@ -112,7 +113,7 @@
 <div class="top">
   <div>
     <h1>Multitune 视觉服务控制台</h1>
-    <p class="sub">10 个视觉评估插件 · 上传图片直接调用本地接口</p>
+    <p class="sub">11 个视觉评估插件 · 上传图片直接调用本地接口</p>
   </div>
   <div class="conn"><span id="dot" class="dot"></span><span id="connText">检测中…</span></div>
 </div>
@@ -137,6 +138,15 @@
         <div class="field" id="tagWrap" hidden>
           <label for="tag">备注 tag（可选，会拼进提示词上下文）</label>
           <input type="text" id="tag" placeholder="例如：叶片发黄第 3 天">
+        </div>
+        <div class="field" id="viewWrap" hidden>
+          <label for="viewSel">拍摄尺度（决定判分刻度）</label>
+          <select id="viewSel">
+            <option value="ground">地面近景 —— 判可落性</option>
+            <option value="region">远景 / 俯瞰 —— 判区域候选度</option>
+          </select>
+          <div class="fieldnote">两种刻度的分数不能互相比较：近景答「现在能不能落」，
+            远景答「值不值得派近景车细看」。</div>
         </div>
         <div class="btns">
           <button class="primary" id="runBtn" disabled>调用接口</button>
@@ -174,6 +184,8 @@ const SERVICES = [
     hint:'室内舒适度评分、异常指标与传感器布点' },
   { key:'mold', name:'霉菌风险', domain:'inert', path:'/api/v1/good/mold', inKey:'image_b64', tag:false,
     hint:'墙面/顶面/地面的霉斑、水痕、冷凝与湿度风险加权' },
+  { key:'moon', name:'月面选址', domain:'inert', path:'/api/v1/good/moon', inKey:'image_b64', tag:false,
+    hint:'行星表面照片预筛：近景判可落性，远景/俯瞰判区域候选度' },
 ];
 
 const el = id => document.getElementById(id);
@@ -216,6 +228,7 @@ function open(key){
   el('pName').textContent = cur.name;
   el('pPath').textContent = cur.path + '  ·  入参字段 ' + cur.inKey;
   el('tagWrap').hidden = !cur.tag;
+  el('viewWrap').hidden = cur.key !== 'moon';
   el('tag').value = '';
   clearImg();
   el('meta').innerHTML = '';
@@ -277,6 +290,8 @@ el('runBtn').onclick = async () => {
   const body = {};
   body[cur.inKey] = fileData;
   if (cur.tag) body.tag = el('tag').value.trim();
+  // 月面选址：尺度由使用者声明，不让模型猜——猜错就会把远处坑壁当成脚下坡面
+  if (cur.key === 'moon') body.view = el('viewSel').value;
 
   el('runBtn').disabled = true;
   el('runBtn').textContent = '调用中…';
@@ -332,6 +347,7 @@ function render(key, d){
     case 'env': return head + renderEnv(d);
     case 'posture': return head + renderPosture(d);
     case 'mold': return head + renderMold(d);
+    case 'moon': return head + renderMoon(d);
     default: return head + renderGeneric(d);
   }
 }
@@ -454,6 +470,42 @@ function renderMold(d){
 
   h += list('处置建议', d.suggestions, x => x);
   if (d.confidence_tip) h += '<div class="kv"><span>置信口径</span><b>' + esc(d.confidence_tip) + '</b></div>';
+  if (d.notice) h += '<div class="block warn"><h4>注意</h4><p>' + esc(d.notice) + '</p></div>';
+  return h;
+}
+
+/* 月面选址：分数越高越适合，配色同其它服务（高分绿） */
+function renderMoon(d){
+  let h = '<div class="score"><b style="color:' + scoreColor(d.site_score) + '">' + esc(d.site_score) + '</b>' +
+    '<span>' + (d.view === 'region' ? '区域候选度 / 100' : '可落性 / 100') + '</span> ' +
+    '<span class="lvl" style="color:var(--dim);background:#f2f4f7">' + esc(d.site_level) + '</span></div>';
+  if (d.score_basis)
+    h += '<p class="muted" style="margin:-6px 0 12px">分数口径：' + esc(d.score_basis) + '</p>';
+
+  if (d.observed && d.observed.length) {
+    h += '<div class="block"><h4>可观测项 · ' + d.observed.length + '</h4><table class="issues">' +
+      '<tr><th>观测项</th><th>结论</th><th>可信度</th></tr>';
+    d.observed.forEach(o => {
+      h += '<tr><td>' + esc(o.name) + '</td><td>' + esc(o.value) + '</td><td class="muted">' +
+        Math.round((o.confidence || 0) * 100) + '%</td></tr>';
+    });
+    h += '</table></div>';
+  }
+
+  if (d.risks && d.risks.length) {
+    h += '<div class="block"><h4>风险 · ' + d.risks.length + '</h4><table class="issues">' +
+      '<tr><th>项</th><th>等级</th><th>说明</th></tr>';
+    d.risks.forEach(r => {
+      h += '<tr><td>' + esc(r.feature_name) + '</td><td>' + esc(r.risk_level) + '</td><td class="muted">' +
+        esc(r.description) + '</td></tr>';
+    });
+    h += '</table></div>';
+  } else {
+    h += '<div class="block"><h4>风险 · 0</h4><p class="muted">画面未发现可判依据的风险项</p></div>';
+  }
+
+  h += list('需外部数据（不参与打分）', d.unobserved, x => x) +
+    list('拍摄要求', d.camera_advice, x => x);
   if (d.notice) h += '<div class="block warn"><h4>注意</h4><p>' + esc(d.notice) + '</p></div>';
   return h;
 }

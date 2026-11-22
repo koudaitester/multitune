@@ -18,6 +18,23 @@
 | oldman_space | `POST /api/v1/good/oldman` | `image_b64` | **否（硬编码直通）** |
 | env_monitor | `POST /api/v1/good/env` | `image_b64` | 是 |
 | mold | `POST /api/v1/good/mold` | `image_b64`（可选 `humidity` / `temperature`） | 是 |
+| moon | `POST /api/v1/good/moon` | `image_b64`（可选 `view`: `ground`/`region`） | 是 |
+
+> `moon` 是首个**分数含义随入参变化**的服务，也是唯一允许这种变化的地方：
+> `view=ground`（默认）判「可落性」，`view=region` 判「区域候选度」，
+> 两套分数、两套等级名、两套 prompt，**不可互相比较**。
+> 起因是一次实测：一张平坦坑底的大坑远景照，被近场判分器打了 59 分——因为
+> 远景里坑壁必然显眼，近场词表把「远处坑壁」当成「脚下坡面」。
+> 尺度由调用方声明，不让模型猜：模型对同一张图问「平不平」答「前景巨石 + 背景山脉」，
+> 问「有没有坑」答「中央大坑」——两次描述互相矛盾，说明它在顺着问题生成句子。
+> region 模式下**刻意不判坡度与通行**，那些量远景给不出。
+>
+> **两段式操作口径**（不在代码里硬编码，是使用约定）：
+> ① 远景/俯瞰先找候选区（有坑、有大范围平坦面），`region ≥ 70`「值得细看」即可**进入备选**；
+> ② 对备选点拍**多方向、多维度的近景照**，逐张跑 `ground`，**全部**达到阈值（≥70「可用」）
+>    才可定为候选点位——任何一张不达标就不得进入下一轮；
+> ③ 多个候选点位横向对比后择优，而不是单点直接定案。
+> 这条链的每一环都是「上一环只能缩小范围、不能给结论」，所以近景分数永远不能从远景推导。
 
 > `mold` 是首个带**可选数值入参**的服务：`humidity` 与 `temperature` 不传就完全不加权、不猜默认值。
 > 规则表（特征权重 81/41/21 分级、湿度 30/20/10、温度 5、无病灶时诱因封顶 20）来自
@@ -74,3 +91,10 @@
 - `good_domain/api.py` 的 `tags` 仍叫「介质品质域」
 - `oldman_space/service.py::validate_entities()` 是空壳，返回值被丢弃
 - `gut` 的 `analyze_gut` 内部无条件写 `gut_tune_log.json`，跨域调用前需补 `write_log` 开关
+- `moon/region` 对「模型描述本身是错的」没有防御：一张满屏坑群的轨道照被描述成
+  "flat and smooth, no visible hills"，于是拿到 70 分「值得细看」。可接受的下限是
+  不给「优选候选」，但没有机制识别这种冲突，只能靠人工复核
+- `moon/` 里用户原有草稿 `schema.py` / `validator.py` / `service.py` 未接入路由：
+  `validator.py` 与 `schema.py` 定义重复且冲突（`MissionProfile` 只允许 mobile_trailer_depot、
+  `feature_groups` 为 dict、`result` 必填），`service.py::run_vlm_on_image` 仍是
+  `NotImplementedError` 占位。要接「完整结构化评估」那条路（需 DEM / 日照 / 通信数据）再动

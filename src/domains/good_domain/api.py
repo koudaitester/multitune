@@ -15,6 +15,9 @@ from domains.good_domain.env_monitor.rules import ENV_MONITOR_PROMPT
 from domains.good_domain.mold.schema import MoldReq, MoldResp
 from domains.good_domain.mold.service import evaluate_mold
 from domains.good_domain.mold.rules import MOLD_PROMPT
+from domains.good_domain.moon.visual import (
+    MOON_PROMPT, REGION_PROMPT, MoonReq, MoonResp, analyze_surface,
+)
 from .env_note.schema import EnvNoteCreate, EnvNoteItem
 from .env_note.service import add_note, list_note
 from typing import Optional
@@ -55,6 +58,19 @@ async def mold_evaluate(req: MoldReq):
     if not raw_text:
         raise HTTPException(status_code=500, detail="调用视觉模型失败")
     return evaluate_mold(raw_text, req.humidity, req.temperature)
+
+
+@router.post("/moon", response_model=MoonResp)
+async def moon_surface(req: MoonReq):
+    # 行星表面预筛：只对照片能观测的项打分，需要外部数据的项单列不参与加权。
+    # view 由调用方声明（地面近景 / 远景俯瞰），两种尺度用不同 prompt 与不同判分：
+    # 同一套近场阈值套在远景上，会把远处坑壁当成脚下坡面。
+    is_region = (req.view or "ground").strip().lower() == "region"
+    prompt = REGION_PROMPT if is_region else MOON_PROMPT
+    raw_text = await vision_predict(req.image_b64, prompt)
+    if not raw_text:
+        raise HTTPException(status_code=500, detail="调用视觉模型失败")
+    return analyze_surface(raw_text, req.view)
 
 @router.post("/env-note/add", response_model=EnvNoteItem)
 def env_note_add(payload: EnvNoteCreate):
