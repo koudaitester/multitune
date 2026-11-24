@@ -16,6 +16,8 @@ def evaluate_by_rules(site: ExoplanetSiteAssessment) -> AssessmentResult:
         ("comms_los", site.feature_groups.comms_los.p_likelihood),
         ("radiation_shield", site.feature_groups.radiation_shield.p_likelihood),
         ("geology_science", site.feature_groups.geology_science.p_likelihood),
+        # 新增：坑天然出口通行能力
+        ("crater_exit", site.feature_groups.crater_exit.p_likelihood),
     ]
 
     # 开启共存评估才加入
@@ -52,6 +54,25 @@ def evaluate_by_rules(site: ExoplanetSiteAssessment) -> AssessmentResult:
         risks.append(RiskItem(feature_name="terrain", risk_level="high", description="最大坡度超过12°，月面车通行困难"))
     if terr.boulder_density_over_30cm > 5:
         risks.append(RiskItem(feature_name="terrain", risk_level="medium", description="大于30cm巨石密度偏高"))
+
+    # ========== 新增坑出口风险判断 ==========
+    crater_exit = site.feature_groups.crater_exit
+    # p_likelihood越低，出口条件越差
+    if crater_exit.p_likelihood < 0.2:
+        print("==================坑天然出口通行能力低")
+        risks.append(RiskItem(
+            feature_name="crater_exit",
+            risk_level="high",
+            description="环形坑闭合无天然地面出口，撤离离开坑底仅可依靠上升器起飞"
+        ))
+    elif 0.2 <= crater_exit.p_likelihood < 0.6:
+        print("==================坑天然出口通行能力一般")
+        risks.append(RiskItem(
+            feature_name="crater_exit",
+            risk_level="medium",
+            description="坑壁通道断续，需要工程修整，地面通行成本较高"
+        ))
+    # >=0.6：天然缓坡缺口，无风险，不追加risk
 
     # 光照风险
     illum = site.feature_groups.illumination

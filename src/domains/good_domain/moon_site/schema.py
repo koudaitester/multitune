@@ -73,6 +73,8 @@ class SpaceEnvironmentFeature(BaseModel):
     ejecta_flux_local: float = Field(ge=0, le=1)
     p_likelihood: float = Field(ge=0, le=1)
 
+class CraterExitFeature(BaseModel):
+    p_likelihood: float = Field(ge=0, le=1, description="坑天然出口地面通行可行性概率")
 
 class GeneralFeatures(BaseModel):
     terrain: TerrainFeature
@@ -82,12 +84,17 @@ class GeneralFeatures(BaseModel):
     geology_science: GeologyScience
     coexistence_assessment: Optional[CoexistenceAssessment] = None
     space_environment: Optional[SpaceEnvironmentFeature] = None
-
+    crater_exit: CraterExitFeature
 
 class MoonPlugin(BaseModel):
-    lunar_day_night_risk: float = Field(ge=0, le=1)
-    lunar_dust_risk: float = Field(ge=0, le=1)
-    has_ice_nearby: bool
+
+    """
+    月球环境参数插件类，用于描述月球环境的相关参数和风险因素。
+    继承自BaseModel，可能用于数据验证和序列化。
+    """
+    lunar_day_night_risk: float = Field(ge=0, le=1)  # 月球昼夜交替风险值，范围在0到1之间，0表示无风险，1表示最高风险
+    lunar_dust_risk: float = Field(ge=0, le=1)       # 月球尘埃风险值，范围在0到1之间，0表示无风险，1表示最高风险
+    has_ice_nearby: bool                             # 周边是否有冰的标志，布尔值类型，True表示有，False表示无
 
 
 class MarsPlugin(BaseModel):

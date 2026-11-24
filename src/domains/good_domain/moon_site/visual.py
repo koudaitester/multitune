@@ -53,6 +53,9 @@ SURFACE_KEYWORDS: List[str] = [
     "surface", "lunar", "moon", "planetary", "regolith", "soil", "dust", "crater", "terrain", "ground",
 ]
 
+# 坑天然出口、连通缓坡通道关键词（仅region远景）
+CRATER_EXIT = ["gap", "notched rim", "rim gap", "break in rim", "opening", "natural passage", "continuous gentle slope", "connecting depression"]
+
 ROUGH_FLAT: List[str] = ["flat", "level", "smooth", "even", "plain", "featureless"]
 ROUGH_UNEVEN: List[str] = [
     # 不放 "rocky"：模型用 "rocky and dusty surface" 描述材质，
@@ -365,6 +368,8 @@ def _analyze_region(text: str) -> Dict:
     bright = _hit(text, ILLUM_GOOD)
     outcrop = _hit(text, OUTCROP)
     crater = _hit(text, CRATER)
+    # 新增：坑出口关键词命中标记
+    has_exit = _hit(text, CRATER_EXIT)
 
     observed: List[Dict] = []
     parts: List[Tuple[float, int]] = []
@@ -378,7 +383,7 @@ def _analyze_region(text: str) -> Dict:
         observed.append({"name": "平坦区规模", "value": "存在平坦区但未覆盖全视野，需确认连续面积", "confidence": 0.6})
     elif _hit(text, ROUGH_UNEVEN):
         parts.append((0.45, 2))
-        observed.append({"name": "平坦区规模", "value": "以起伏地形为主，未见连续平坦面", "confidence": 0.6})
+        bserved.append({"name": "平坦区规模", "value": "以起伏地形为主，未见连续平坦面", "confidence": 0.6})
     else:
         parts.append((0.5, 1))
         observed.append({"name": "平坦区规模", "value": "描述不足，无法判断平坦区范围", "confidence": 0.25})
@@ -433,6 +438,14 @@ def _analyze_region(text: str) -> Dict:
         parts.append((0.55, 1))
         observed.append({"name": "光照条件", "value": "无法判断太阳高度角", "confidence": 0.25})
 
+    # ========== 新增6) 坑壁天然出口（仅图像可见信息，权重2） ==========
+    if has_exit:
+        parts.append((0.88, 2))
+        observed.append({"name": "坑壁天然出口/连通通道", "value": "画面可见坑壁缺口，存在平缓连通通道，月面车辆存在地面驶出可能性", "confidence":0.65})
+    else:
+        parts.append((0.5, 1))
+        observed.append({"name": "坑壁天然出口/连通通道", "value": "画面内未观测到坑壁缺口，无法确认是否存在地面出口", "confidence":0.3})
+
     score_sum = sum(p * w for p, w in parts)
     weight_total = sum(w for _, w in parts)
     p_region = score_sum / weight_total if weight_total else 0.0
@@ -442,10 +455,12 @@ def _analyze_region(text: str) -> Dict:
     risks: List[RiskItem] = []
     if big_b:
         risks.append(RiskItem(feature_name="terrain", risk_level="medium",
-                              description="区域内有成片巨石，近景可落区需避开"))
+        description="区域内有成片巨石，近景可落区需避开"))
     if edge_rise:
         risks.append(RiskItem(feature_name="terrain", risk_level="low",
-                              description="边缘有高地或坑壁，站点与陡坡的水平距离需 DEM 确认"))
+        description="边缘有高地或坑壁，站点与陡坡的水平距离需 DEM 确认"))
+    # 新增：图像观测到出口缺失不直接加高风险（图片视野有限，不能断定坑是闭合环形山）
+    # 风险判定交给rules.py结构化站点数据，视觉模块仅做观测记录，不产生高风险
 
     return {
         "view": "region",
@@ -459,8 +474,7 @@ def _analyze_region(text: str) -> Dict:
         "notice": REGION_NOTICE,
         "status": STATUS_OK,
         "reason": "",
-    }
-
+        }
 
 def analyze_surface(raw_text: str, view: str = "ground") -> Dict:
     text = (raw_text or "").lower()

@@ -186,6 +186,9 @@ const SERVICES = [
     hint:'墙面/顶面/地面的霉斑、水痕、冷凝与湿度风险加权' },
   { key:'moon', name:'月面选址', domain:'inert', path:'/api/v1/good/moon', inKey:'image_b64', tag:false,
     hint:'行星表面照片预筛：近景判可落性，远景/俯瞰判区域候选度' },
+  { key:'mars', name:'火星地表选址', domain:'inert', path:'/api/v1/good/mars_site', inKey:'image_b64', tag:false,
+    hint:'行星表面照片预筛：近景判可落性，远景/俯瞰判区域候选度' },
+
 ];
 
 const el = id => document.getElementById(id);
@@ -228,7 +231,7 @@ function open(key){
   el('pName').textContent = cur.name;
   el('pPath').textContent = cur.path + '  ·  入参字段 ' + cur.inKey;
   el('tagWrap').hidden = !cur.tag;
-  el('viewWrap').hidden = cur.key !== 'moon';
+  el('viewWrap').hidden = (cur.key !== 'moon' && cur.key !== 'mars');
   el('tag').value = '';
   clearImg();
   el('meta').innerHTML = '';
@@ -291,7 +294,7 @@ el('runBtn').onclick = async () => {
   body[cur.inKey] = fileData;
   if (cur.tag) body.tag = el('tag').value.trim();
   // 月面选址：尺度由使用者声明，不让模型猜——猜错就会把远处坑壁当成脚下坡面
-  if (cur.key === 'moon') body.view = el('viewSel').value;
+  if (cur.key === 'moon' || cur.key === 'mars') body.view = el('viewSel').value;
 
   el('runBtn').disabled = true;
   el('runBtn').textContent = '调用中…';
@@ -348,6 +351,7 @@ function render(key, d){
     case 'posture': return head + renderPosture(d);
     case 'mold': return head + renderMold(d);
     case 'moon': return head + renderMoon(d);
+    case 'mars': return head + renderMoon(d);
     default: return head + renderGeneric(d);
   }
 }

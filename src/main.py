@@ -7,7 +7,7 @@ app = FastAPI(title="Tune 活体视觉评估服务")
 app.include_router(tune_router, prefix="/api/v1")
 app.include_router(good_router, prefix="/api/v1")
 
-app.mount("/html_basic", StaticFiles(directory="html_basic"), name="html_static")
+app.mount("", StaticFiles(directory="html_basic"), name="html_static")
 
 if __name__ == "__main__":
     import uvicorn
