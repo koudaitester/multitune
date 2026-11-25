@@ -1,0 +1,88 @@
+{
+  "site_id": "qingyuan_crater",
+  "site_name": "清原坑",
+  "site_name_en": "Qingyuan Crater",
+  "coordinate": {
+    "lon_deg": 100.533,
+    "lat_deg": 39.271
+  },
+  "source": "HiRISE / Caltech MRO imagery, SWIM shallow ice probability map",
+  "description": "火星北半球乌托邦平原撞击坑，项目自定义候选栖息地（非IAU官方命名）。坑壁高大，坑底极其平坦；北侧坑壁坡面平缓，沿原生缓坡修建坡道式气密出入口，无需大规模开挖爆破。本区域属于浅层埋藏冰高概率区，预期几十米深度存在水冰透镜，可就地开采水源。采用渐进式分百年建造策略，社群定位偏向基础科研与能源试验。",
+  "terrain": {
+    "approx_diameter_km": 8.1,
+    "crater_wall_height_m": 330,
+    "floor_max_slope_deg": 1.9,
+    "notch": {
+      "position": "north_ramp",
+      "notch_width_km": 1.4,
+      "desc": "无天然缺口，北侧坑壁坡度平缓，可顺着原生坡面修建坡道式出入口，依托原有地貌做加固气密通道"
+    }
+  },
+  "environment": {
+    "latitude_zone": "northern_mid_latitude",
+    "solar_condition": "moderate",
+    "local_water_ice": true,
+    "water_supply_plan": [
+      "primary: in-situ shallow subsurface ice lens mining",
+      "backup: polar ice mining + aerial transport to crater"
+    ],
+    "galactic_radiation_baseline_mgy_per_sol": 0.55,
+    "shallow_ice_confidence": 0.86
+  },
+  "construction_phases": [
+    {
+      "phase_id": 1,
+      "phase_name": "着陆就位与基础驻留",
+      "timescale_sol": "0 ~ 300 sol",
+      "work_items": [
+        "组合舱体着陆，布置于坑壁内侧",
+        "搭建基础生命维持、能源、通信系统",
+        "北侧缓坡搭建简易气密围挡，作为临时人员/物资通道",
+        "布设次表层雷达、勘探钻机，验证浅层冰透镜"
+      ],
+      "milestone": "实现最小可生存驻留，无需穹顶即可短期居住"
+    },
+    {
+      "phase_id": 2,
+      "phase_name": "资源勘探与就地建材验证",
+      "timescale_year": "1 ~ 10 年",
+      "work_items": [
+        "钻探确认浅层水冰储量，建立原位取水开采系统",
+        "坑壁岩土取样，测试原位烧结、3D打印建筑材料",
+        "搭建能源试验平台，测试储能、地热与光伏组合方案",
+        "太阳能阵列扩容，搭配大容量储能系统应对漫长冬季光照衰减"
+      ],
+      "milestone": "水源就地自给，验证多类型能源系统在火星环境下长期运行"
+    },
+    {
+      "phase_id": 3,
+      "phase_name": "永久坡道气密闸门 + 局部穹顶",
+      "timescale_year": "10 ~ 80 年",
+      "work_items": [
+        "加固北侧缓坡，修建坡道式气密主闸门",
+        "搭建局部穹顶，覆盖核心生活区与科研试验平台",
+        "建立封闭内部大气循环，局部可控温湿度气压"
+      ],
+      "milestone": "永久出入口建成，核心科研与居住区域稳定运行"
+    },
+    {
+      "phase_id": 4,
+      "phase_name": "全坑穹顶闭合，完整栖息地",
+      "timescale_year": "80 ~ 300 年",
+      "work_items": [
+        "逐步扩展穹顶结构，最终封闭整个坑口，坡道出入口保留为唯一连通通道",
+        "坑内全域大气、温湿度、生态闭环调控",
+        "持续拓展基础物理、地质、空间环境相关长期观测实验"
+      ],
+      "milestone": "陨石坑整体改造完成，以基础科研为核心的独立火星聚居地"
+    }
+  ],
+  "evaluation_tags": [
+    "crater_roof_habitat",
+    "northern_mid_latitude",
+    "in_situ_shallow_ice",
+    "ramp_entrance",
+    "research_focus",
+    "progressive_construction"
+  ]
+}

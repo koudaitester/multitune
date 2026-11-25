@@ -18,6 +18,9 @@ from domains.good_domain.mold.rules import MOLD_PROMPT
 from domains.good_domain.moon_site.visual import (
     MOON_PROMPT, REGION_PROMPT, MoonReq, MoonResp, analyze_surface,
 )
+from domains.good_domain.crater.schema import CraterDoubleReq, CraterDoubleResp
+from domains.good_domain.crater.service import crater_double_image_verify
+from domains.good_domain.crater.rules import CRATER_OVERVIEW_PROMPT, CRATER_DETAIL_PROMPT
 from .env_note.schema import EnvNoteCreate, EnvNoteItem
 from .env_note.service import add_note, list_note
 from typing import Optional
@@ -91,3 +94,12 @@ def env_note_add(payload: EnvNoteCreate):
 @router.get("/env-note/list")
 def env_note_list(start:Optional[str]=None, end:Optional[str]=None):
     return list_note(start, end)
+
+@router.post("/crater", response_model=CraterDoubleResp)
+async def crater_verify(req: CraterDoubleReq):
+    """陨石坑双图校验：远景全貌 + 近景局部，联合判断是否撞击坑"""
+    raw_overview = await vision_predict(req.image_overview_b64, CRATER_OVERVIEW_PROMPT)
+    raw_detail = await vision_predict(req.image_detail_b64, CRATER_DETAIL_PROMPT)
+    if not raw_overview or not raw_detail:
+        raise HTTPException(status_code=500, detail="视觉模型调用失败，远景或近景图无返回")
+    return await crater_double_image_verify(raw_overview, raw_detail)

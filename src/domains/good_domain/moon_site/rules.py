@@ -59,14 +59,12 @@ def evaluate_by_rules(site: ExoplanetSiteAssessment) -> AssessmentResult:
     crater_exit = site.feature_groups.crater_exit
     # p_likelihood越低，出口条件越差
     if crater_exit.p_likelihood < 0.2:
-        print("==================坑天然出口通行能力低")
         risks.append(RiskItem(
             feature_name="crater_exit",
             risk_level="high",
             description="环形坑闭合无天然地面出口，撤离离开坑底仅可依靠上升器起飞"
         ))
     elif 0.2 <= crater_exit.p_likelihood < 0.6:
-        print("==================坑天然出口通行能力一般")
         risks.append(RiskItem(
             feature_name="crater_exit",
             risk_level="medium",

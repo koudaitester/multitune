@@ -1,0 +1,10 @@
+{
+  "name":"月球栖息地选址规则",
+  "items":[
+    {"key":"flatness","weight":0.20,"max_score":10,"desc":"坑内平坦度"},
+    {"key":"wall_shield","weight":0.30,"max_score":10,"desc":"坑壁辐射/陨石防护能力"},
+    {"key":"illumination","weight":0.25,"max_score":10,"desc":"全年光照可持续性"},
+    {"key":"ice_potential","weight":0.20,"max_score":10,"desc":"水冰蕴藏潜力"},
+    {"key":"access","weight":0.05,"max_score":10,"desc":"着陆可达性"}
+  ]
+}

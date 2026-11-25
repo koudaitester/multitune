@@ -1,0 +1,122 @@
+[
+{
+  "site_id": "douyu_crater",
+  "site_name": "豆雨坑",
+  "site_name_en": "Douyu Crater",
+  "coordinate": {
+    "lon_deg": -74.533221,
+    "lat_deg": -13.075383
+  },
+  "source": "HiRISE / Caltech MRO imagery",
+  "description": "火星南纬13°撞击坑，作为项目内自定义封闭栖息地选址，非IAU官方命名。坑壁较高，坑底平坦；西北侧存在一处缺口，需要工程修补；本地无水冰，水源需要极地采掘转运。",
+  "terrain": {
+    "approx_diameter_km": 8.2,
+    "crater_wall_height_m": 380,
+    "floor_max_slope_deg": 2.7,
+    "notch": {
+      "position": "northwest",
+      "notch_width_km": 1.6,
+      "wall_remaining_height_m": 110
+    }
+  },
+  "environment": {
+    "latitude_zone": "low_southern",
+    "solar_condition": "good",
+    "local_water_ice": false,
+    "water_supply_plan": "polar ice mining + aerial transport to crater",
+    "galactic_radiation_baseline_mgy_per_sol": 0.61
+  },
+  "evaluation_tags": [
+    "crater_roof_habitat",
+    "low_latitude",
+    "external_water_supply",
+    "single_notch_repair_required"
+  ]
+},
+{
+  "site_id": "douyu_crater",
+  "site_name": "豆雨坑",
+  "site_name_en": "Douyu Crater",
+  "coordinate": {
+    "lon_deg": -74.533221,
+    "lat_deg": -13.075383
+  },
+  "source": "HiRISE / Caltech MRO imagery",
+  "description": "火星南纬13°撞击坑，项目自定义封闭栖息地选址（非IAU官方命名）。坑壁较高，坑底平坦；西北侧存在一处缺口，可改造为主出入口；本地无浅层水冰，水源备选方案：极地运冰 / 深部钻探寻找水合矿物。采用分百年渐进式建造策略，先驻留、再扩建，不等待整体穹顶完工再入驻。",
+  "terrain": {
+    "approx_diameter_km": 8.2,
+    "crater_wall_height_m": 380,
+    "floor_max_slope_deg": 2.7,
+    "notch": {
+      "position": "northwest",
+      "notch_width_km": 1.6,
+      "wall_remaining_height_m": 110
+    }
+  },
+  "environment": {
+    "latitude_zone": "low_southern",
+    "solar_condition": "good",
+    "local_water_ice": false,
+    "water_supply_plan": [
+      "primary: polar ice mining + aerial transport to crater",
+      "backup: subsurface radar survey + deep drilling, search for local buried ice lens"
+    ],
+    "galactic_radiation_baseline_mgy_per_sol": 0.61
+  },
+  "construction_phases": [
+    {
+      "phase_id": 1,
+      "phase_name": "着陆就位与基础驻留",
+      "timescale_sol": "0 ~ 300 sol",
+      "work_items": [
+        "组合舱体着陆，布置于坑壁内侧",
+        "搭建基础生命维持、能源、通信系统",
+        "缺口临时气密围挡，作为临时人员/物资通道",
+        "布设次表层雷达、勘探钻机，探查地下水资源"
+      ],
+      "milestone": "实现最小可生存驻留，无需穹顶即可短期居住"
+    },
+    {
+      "phase_id": 2,
+      "phase_name": "资源勘探与就地建材验证",
+      "timescale_year": "1 ~ 10 年",
+      "work_items": [
+        "完成地下冰/含水矿物勘探评估，锁定水源方案",
+        "坑壁岩土取样，测试原位烧结、3D打印建筑材料",
+        "扩建舱组，扩大生活区与实验室",
+        "太阳能阵列扩容"
+      ],
+      "milestone": "确认长期资源供给，验证火星本土造建材工艺"
+    },
+    {
+      "phase_id": 3,
+      "phase_name": "永久气密闸门 + 局部穹顶",
+      "timescale_year": "10 ~ 80 年",
+      "work_items": [
+        "加固西北缺口，修建大型气密主闸门",
+        "搭建局部穹顶，覆盖核心生活区",
+        "建立封闭内部大气循环，局部可控温湿度气压"
+      ],
+      "milestone": "拥有永久出入口，核心区域形成可控封闭环境"
+    },
+    {
+      "phase_id": 4,
+      "phase_name": "全坑穹顶闭合，完整栖息地",
+      "timescale_year": "80 ~ 300 年",
+      "work_items": [
+        "逐步扩展穹顶结构，最终封闭整个坑口",
+        "坑内全域大气、温湿度、生态闭环调控",
+        "大面积农业区、聚居区建设"
+      ],
+      "milestone": "陨石坑整体改造完成，独立完整火星栖息地"
+    }
+  ],
+  "evaluation_tags": [
+    "crater_roof_habitat",
+    "low_latitude",
+    "external_water_supply",
+    "single_notch_repair_required",
+    "progressive_construction"
+  ]
+}
+]
